@@ -3,7 +3,7 @@
 A package to optimize linear and quadratic problems in QPSData format (see
 QPSReader.jl)
 
-#Usage
+# Usage
 
 ```julia
 using QPSReader
