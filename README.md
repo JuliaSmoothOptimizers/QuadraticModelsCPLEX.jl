@@ -9,5 +9,5 @@ QPSReader.jl)
 using QPSReader
 using QPModelCPLEX
 qpmodel = readqps("AFIRO.SIF")
-stats = QPModelCPLEX.optimizeCPlex(qpmodel)
+stats = QPModelCPLEX.optimizeCPLEX(qpmodel)
 ```

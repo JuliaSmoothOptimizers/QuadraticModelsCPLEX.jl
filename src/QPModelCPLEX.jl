@@ -1,7 +1,6 @@
 module QPModelCPLEX
 
 using CPLEX
-using QPSReader
 using QuadraticModels
 using NLPModels
 using SolverTools
@@ -16,7 +15,7 @@ function createQuadraticModel(qpdata)
 end
 
 
-function optimizeCPlex(QM; method=0, presolve=true, scaling=true, crossover=true,
+function optimizeCPLEX(QM; method=0, presolve=true, scaling=true, crossover=true,
                        time_limit=3600, output=1)
     SM = SlackModel(QM)
 
@@ -74,9 +73,9 @@ function optimizeCPlex(QM; method=0, presolve=true, scaling=true, crossover=true
     return stats
 end
 
-function optimizeCPlex(qpdata::QPSData; method=0, presolve=true, scaling=true, crossover=true,
+function optimizeCPLEX(qpdata::QPSData; method=0, presolve=true, scaling=true, crossover=true,
                        time_limit=3600, output=1)
-    return optimizeCPlex(createQuadraticModel(qpdata), method=method, presolve=presolve,
+    return optimizeCPLEX(createQuadraticModel(qpdata), method=method, presolve=presolve,
                          crossover=crossover, time_limit=time_limit, output=output)
 end
 
