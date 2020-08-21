@@ -7,6 +7,7 @@ QPSReader.jl)
 
 ```julia
 using QPSReader
+using QPModelCPLEX
 qpmodel = readqps("AFIRO.SIF")
-stats = optimizeCPlex(qpmodel)
+stats = QPModelCPLEX.optimizeCPlex(qpmodel)
 ```
