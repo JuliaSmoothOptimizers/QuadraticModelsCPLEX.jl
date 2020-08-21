@@ -15,7 +15,7 @@ function createQuadraticModel(qpdata)
 end
 
 
-function optimizeCPLEX(QM; method=0, presolve=true, scaling=true, crossover=true,
+function optimizeCPLEX(QM; method=4, presolve=true, scaling=true, crossover=true,
                        time_limit=3600, output=1)
     SM = SlackModel(QM)
 
@@ -34,7 +34,7 @@ function optimizeCPLEX(QM; method=0, presolve=true, scaling=true, crossover=true
         CPLEX.set_param!(env, "CPXPARAM_SolutionType", 2)  # No crossover
     end
     CPLEX.set_param!(env, "CPXPARAM_LPMethod", method)  # 4 = Use barrier
-    CPLEX.set_param!(env, "CPXPARAM_QPMethod", method) # 4 = Use barrier
+    CPLEX.set_param!(env, "CPXPARAM_QPMethod", method) # 4 = Use barrier, 0 = automatic
 
 
     Aeq = jac(SM, SM.meta.x0)
