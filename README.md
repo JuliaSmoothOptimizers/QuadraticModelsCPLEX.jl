@@ -1,13 +1,13 @@
 # QPModelCPLEX
 
-A package to optimize linear and quadratic problems in QPSData format (see
-QPSReader.jl)
+A package to use CPLEX to optimize linear and quadratic problems in QPSData
+format (see QPSReader.jl)
 
 # Usage
 
 ```julia
 using QPSReader
-using QPModelCPLEX
+using QuadraticModelsCPLEX
 qpmodel = readqps("AFIRO.SIF")
 stats = QPModelCPLEX.optimizeCPLEX(qpmodel)
 ```
