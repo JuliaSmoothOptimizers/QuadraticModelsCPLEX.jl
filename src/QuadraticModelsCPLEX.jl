@@ -76,7 +76,7 @@ function cplex(QM; method=4, display=1, kwargs...)
 
     status_p = Ref{Cint}()
     lp = CPXcreateprob(env, status_p, "")
-    CPXnewcols(env, lp, QM.meta.nvar,QM.data.c, QM.meta.lvar, QM.meta.uvar, C_NULL, C_NULL)
+    CPXnewcols(env, lp, QM.meta.nvar, QM.data.c, QM.meta.lvar, QM.meta.uvar, C_NULL, C_NULL)
     CPXchgobjoffset(env, lp, QM.data.c0)
     if QM.meta.nnzh > 0
         Hvals = zeros(eltype(QM.data.Hvals), length(QM.data.Hvals))
@@ -94,11 +94,11 @@ function cplex(QM; method=4, display=1, kwargs...)
         for k = 1:QM.meta.nvar
           qmatcnt[k] = Q.colptr[k+1] - Q.colptr[k]
         end
-        CPXcopyquad(env, lp, convert(Array{Cint,1}, Q.colptr[1:end-1].-1), convert(Array{Cint,1},qmatcnt),
+        CPXcopyquad(env, lp, convert(Array{Cint,1}, Q.colptr[1:end-1].-1), convert(Array{Cint,1}, qmatcnt),
                     convert(Array{Cint,1}, Q.rowval.-1), Q.nzval)
     end
 
-    Acsrrowptr, Acsrcolval, Acsrnzval = sparse_csr(QM.data.Arows,QM.data.Acols,
+    Acsrrowptr, Acsrcolval, Acsrnzval = sparse_csr(QM.data.Arows, QM.data.Acols,
                                                    QM.data.Avals, QM.meta.ncon,
                                                    QM.meta.nvar)
 
@@ -141,11 +141,11 @@ function cplex(QM; method=4, display=1, kwargs...)
     drange_idx = findall(!isequal(0.), drange)
     n_drange_idx = length(drange_idx)
     CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), rhs,
-               sense, convert(Vector{Cint},Acsrrowptr.- Cint(1)), convert(Vector{Cint},Acsrcolval.- Cint(1)),
+               sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
                Acsrnzval, C_NULL, C_NULL)
 
     if n_drange_idx > 0
-        CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint},drange_idx),
+        CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx),
                      convert(Vector{Cint}, drange[drange2]))
     end
 
