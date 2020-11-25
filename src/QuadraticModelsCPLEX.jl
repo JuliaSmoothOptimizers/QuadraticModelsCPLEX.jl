@@ -146,7 +146,7 @@ function cplex(QM; method=4, display=1, kwargs...)
 
     if n_drange_idx > 0
         CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx),
-                     convert(Vector{Cint}, drange[drange2]))
+                     convert(Vector{Cint}, drange[drange_idx]))
     end
 
     t = @timed begin
