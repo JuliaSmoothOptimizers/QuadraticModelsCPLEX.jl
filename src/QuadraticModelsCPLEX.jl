@@ -138,15 +138,15 @@ function cplex(QM; method=4, display=1, kwargs...)
            rhs[j] = Inf
        end
     end
-    drange_idx = findall(!isequal(0.), drange)
-    n_drange_idx = length(drange_idx)
     CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), rhs,
                sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
                Acsrnzval, C_NULL, C_NULL)
-
-    if n_drange_idx > 0
-        CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx), drange[drange_idx])
-    end
+   #
+   # drange_idx = findall(!isequal(0.), drange)
+   # n_drange_idx = length(drange_idx)
+   #  if n_drange_idx > 0
+   #      CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx), drange[drange_idx])
+   #  end
 
     t = @timed begin
         if QM.meta.nnzh > 0
