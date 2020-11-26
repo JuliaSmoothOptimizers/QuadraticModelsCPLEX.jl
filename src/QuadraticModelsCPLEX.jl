@@ -61,7 +61,7 @@ function cplex(QM; method=4, display=1, kwargs...)
     env = CPLEX.Env()
     CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
     CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600)  # Time limit
-    # CPXsetintparam(env, CPXPARAM_Threads, 1) # Single thread
+    CPXsetintparam(env, CPXPARAM_Threads, 1) # Single thread
     for (k, v) in kwargs
         if k==:presolve
             CPXsetintparam(env, CPXPARAM_Preprocessing_Presolve, v) # 0 = no presolve
@@ -102,61 +102,45 @@ function cplex(QM; method=4, display=1, kwargs...)
                                                    QM.data.Avals, QM.meta.ncon,
                                                    QM.meta.nvar)
 
-    # sense = fill(Cchar('A'), QM.meta.ncon) # lower, greater, range or equal. A is for the init
-    # if length(QM.meta.jinf) > 0
-    #     error("infeasible bounds in A")
-    # end
-    # p_low, p_upp, p_rng, p_fix = 1, 1, 1, 1
-    # for j=1:QM.meta.ncon
-    #    if length(QM.meta.jlow) > 0 && QM.meta.jlow[p_low] == j
-    #        sense[j] = Cchar('G')
-    #        if (p_low < length(QM.meta.jlow)) p_low += 1 end
-    #    elseif length(QM.meta.jupp) > 0 && QM.meta.jupp[p_upp] == j
-    #        sense[j] = Cchar('L')
-    #        if (p_upp < length(QM.meta.jupp)) p_upp += 1 end
-    #    elseif length(QM.meta.jrng) > 0 && QM.meta.jrng[p_rng] == j
-    #        sense[j] = Cchar('R')
-    #        if (p_rng < length(QM.meta.jrng)) p_rng += 1 end
-    #    elseif length(QM.meta.jfix) > 0 && QM.meta.jfix[p_fix] == j
-    #        sense[j] = Cchar('E')
-    #        if (p_fix < length(QM.meta.jfix)) p_fix += 1 end
-    #    else
-    #        error("A error")
-    #    end
-    # end
-    # rhs = zeros(QM.meta.ncon)
-    # drange = zeros(QM.meta.ncon)
-    # for j = 1:QM.meta.ncon
-    #    if QM.meta.lcon[j] != -Inf && QM.meta.ucon[j] != Inf
-    #        rhs[j] = QM.meta.ucon[j]
-    #        drange[j] = QM.meta.ucon[j] - QM.meta.lcon[j]
-    #    elseif QM.meta.lcon[j] != -Inf && QM.meta.ucon[j] == Inf
-    #        rhs[j] = QM.meta.lcon[j]
-    #    elseif QM.meta.lcon[j] == -Inf && QM.meta.ucon[j] != Inf
-    #        rhs[j] = QM.meta.ucon[j]
-    #    else
-    #        rhs[j] = Inf
-    #    end
-    # end
-    # CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), rhs,
-    #            sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
-    #            Acsrnzval, C_NULL, C_NULL)
-
-    Acsrrowptr, Acsrcolval = convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1))
-
-    CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), QM.meta.lcon,
-              fill(Cchar('G'), QM.meta.ncon), Acsrrowptr, Acsrcolval,
-              Acsrnzval, C_NULL, C_NULL)
-
-    CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), QM.meta.ucon,
-               fill(Cchar('L'), QM.meta.ncon), Acsrrowptr, Acsrcolval,
+    sense = fill(Cchar('A'), QM.meta.ncon) # lower, greater, range or equal. A is for the init
+    if length(QM.meta.jinf) > 0
+        error("infeasible bounds in A")
+    end
+    p_low, p_upp, p_rng, p_fix = 1, 1, 1, 1
+    for j=1:QM.meta.ncon
+       if length(QM.meta.jlow) > 0 && QM.meta.jlow[p_low] == j
+           sense[j] = Cchar('G')
+           if (p_low < length(QM.meta.jlow)) p_low += 1 end
+       elseif length(QM.meta.jupp) > 0 && QM.meta.jupp[p_upp] == j
+           sense[j] = Cchar('L')
+           if (p_upp < length(QM.meta.jupp)) p_upp += 1 end
+       elseif length(QM.meta.jrng) > 0 && QM.meta.jrng[p_rng] == j
+           sense[j] = Cchar('R')
+           if (p_rng < length(QM.meta.jrng)) p_rng += 1 end
+       elseif length(QM.meta.jfix) > 0 && QM.meta.jfix[p_fix] == j
+           sense[j] = Cchar('E')
+           if (p_fix < length(QM.meta.jfix)) p_fix += 1 end
+       else
+           error("A error")
+       end
+    end
+    rhs = zeros(QM.meta.ncon)
+    drange = zeros(QM.meta.ncon)
+    for j = 1:QM.meta.ncon
+       if QM.meta.lcon[j] != -Inf && QM.meta.ucon[j] != Inf
+           rhs[j] = QM.meta.ucon[j]
+           drange[j] = QM.meta.ucon[j] - QM.meta.lcon[j]
+       elseif QM.meta.lcon[j] != -Inf && QM.meta.ucon[j] == Inf
+           rhs[j] = QM.meta.lcon[j]
+       elseif QM.meta.lcon[j] == -Inf && QM.meta.ucon[j] != Inf
+           rhs[j] = QM.meta.ucon[j]
+       else
+           rhs[j] = Inf
+       end
+    end
+    CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), rhs,
+               sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
                Acsrnzval, C_NULL, C_NULL)
-
-   # drange_idx = findall(!isequal(0.), drange)
-   # n_drange_idx = length(drange_idx)
-   #  if n_drange_idx > 0
-   #      CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx), drange[drange_idx])
-   #  end
 
     t = @timed begin
         if QM.meta.nnzh > 0
