@@ -59,7 +59,7 @@ end
 function cplex(QM; method=4, display=1, kwargs...)
 
     env = CPLEX.Env()
-    CPXsetintparam(env, CPXPARAM_ScreenOutput, 1)   # Enable output (0=off)
+    CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
     CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600)  # Time limit
     CPXsetintparam(env, CPXPARAM_Threads, 1) # Single thread
     for (k, v) in kwargs
@@ -68,7 +68,7 @@ function cplex(QM; method=4, display=1, kwargs...)
         elseif k==:scaling
             CPXsetintparam(env, CPXPARAM_Read_Scale, -1) # -1 = no scaling
         elseif k==:crossover
-            CPXsetintparam(env, CPXPARAM_SolutionType, 2)  # 2 = no crossover
+            CPXsetintparam(env, CPXPARAM_SolutionType, v)  # 2 = no crossover
         end
     end
     CPXsetintparam(env, CPXPARAM_LPMethod, method)  # 4 = Use barrier
@@ -138,16 +138,9 @@ function cplex(QM; method=4, display=1, kwargs...)
            rhs[j] = Inf
        end
     end
-    drange_idx = findall(!isequal(0.), drange)
-    n_drange_idx = length(drange_idx)
     CPXaddrows(env, lp, 0, QM.meta.ncon, length(Acsrcolval), rhs,
                sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
                Acsrnzval, C_NULL, C_NULL)
-
-    if n_drange_idx > 0
-        CPXchgrngval(env, lp, n_drange_idx, convert(Vector{Cint}, drange_idx),
-                     convert(Vector{Cint}, drange[drange2]))
-    end
 
     t = @timed begin
         if QM.meta.nnzh > 0
