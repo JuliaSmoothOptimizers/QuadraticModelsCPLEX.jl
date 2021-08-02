@@ -1,8 +1,7 @@
 module QuadraticModelsCPLEX
 
 using CPLEX
-using QuadraticModels
-using SolverTools
+using QuadraticModels, SolverCore
 using LinearAlgebra, SparseArrays
 
 export cplex
@@ -56,7 +55,7 @@ function sparse_csr(I, J, V, m=maximum(I), n=maximum(J))
     return csrrowptr, csrcolval, csrnzval
 end
 
-function cplex(QM; method=4, display=1, kwargs...)
+function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
 
     env = CPLEX.Env()
     CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
