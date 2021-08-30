@@ -4,7 +4,7 @@ using CPLEX
 using QuadraticModels, SolverCore
 using LinearAlgebra, SparseArrays
 
-export cplex
+export cplex, presolve_to_file, CPXPresolveException
 
 const cplex_statuses = Dict(1 => :acceptable,
                             2 => :unbounded,
@@ -55,7 +55,7 @@ function sparse_csr(I, J, V, m=maximum(I), n=maximum(J))
   return csrrowptr, csrcolval, csrnzval
 end
 
-function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
+function cplex_inputQM(QM::QuadraticModel; method=4, display=1, kwargs...)
 
   env = CPLEX.Env()
   CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
@@ -141,6 +141,13 @@ function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
              sense, convert(Vector{Cint}, Acsrrowptr.- Cint(1)), convert(Vector{Cint}, Acsrcolval.- Cint(1)),
              Acsrnzval, C_NULL, C_NULL)
 
+  return env, lp
+end
+
+function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
+
+  env, lp = cplex_inputQM(QM; method=method, display=display, kwargs...)
+
   t = @timed begin
     if QM.meta.nnzh > 0
       CPXqpopt(env, lp)
@@ -171,6 +178,25 @@ function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
                                 multipliers = y,
                                 elapsed_time = t[2])
   return stats
+end
+
+mutable struct CPXPresolveException <: Exception
+  msg::AbstractString
+end
+
+function presolve_to_file(QM::QuadraticModel; path::String = "presolved.mps", method=4, display=1, kwargs...)
+
+  env, lp = cplex_inputQM(QM; method=method, display=display, kwargs...)
+  objoff = Ref{Cdouble}()
+  str_p =  string(path[1:end-3], "pre")
+  status = CPXpreslvwrite(env, lp, str_p, objoff)
+  status == 1103 && throw(CPXPresolveException("No presolve operation performed"))
+
+  status_p = Ref{Cint}()
+  lp_p = CPXcreateprob(env, status_p, "")
+
+  CPXreadcopyprob(env, lp_p, str_p, C_NULL)
+  status = CPXwriteprob(env, lp_p, path, C_NULL)
 end
 
 end
