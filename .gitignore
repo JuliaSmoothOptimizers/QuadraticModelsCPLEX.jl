@@ -1,1 +1,5 @@
 Manifest.toml
+test/HS52_PS.mps
+test/HS52_PS.pre
+*.pre
+test/QAFIRO_PS.mps
