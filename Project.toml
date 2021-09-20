@@ -12,9 +12,9 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 CPLEX = "0.7"
-QuadraticModels = "0.5"
+QuadraticModels = "^0.5"
 SolverCore = "0.2.1"
-julia = "1"
+julia = "^1.0.0"
 
 [extras]
 QPSReader = "10f199a5-22af-520b-b891-7ce84a7b1bd0"
