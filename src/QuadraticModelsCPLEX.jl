@@ -1,7 +1,7 @@
 module QuadraticModelsCPLEX
 
 using CPLEX
-using QuadraticModels, SolverCore
+using QuadraticModels, SolverCore, SparseMatricesCOO
 using LinearAlgebra, SparseArrays
 
 export cplex, presolve_to_file, CPXPresolveException
@@ -55,7 +55,12 @@ function sparse_csr(I, J, V, m=maximum(I), n=maximum(J))
   return csrrowptr, csrcolval, csrnzval
 end
 
-function cplex_inputQM(QM::QuadraticModel; method=4, display=1, kwargs...)
+cplex_inputQM(QM::QuadraticModel{T, S}; kwargs...) where {T, S} = cplex_inputQM(
+  convert(QuadraticModel{T, S, SparseMatrixCOO{T, Int}, SparseMatrixCOO{T, Int}}, QM)
+)
+
+function cplex_inputQM(QM::QuadraticModel{T, S, M1, M2}; method=1, display=1,
+                       kwargs...) where {T, S, M1 <: SparseMatrixCOO, M2 <: SparseMatrixCOO}
 
   env = CPLEX.Env()
   CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
@@ -78,15 +83,7 @@ function cplex_inputQM(QM::QuadraticModel; method=4, display=1, kwargs...)
   CPXnewcols(env, lp, QM.meta.nvar, QM.data.c, QM.meta.lvar, QM.meta.uvar, C_NULL, C_NULL)
   CPXchgobjoffset(env, lp, QM.data.c0)
   if QM.meta.nnzh > 0
-    Hvals = zeros(eltype(QM.data.Hvals), length(QM.data.Hvals))
-    for i=1:length(QM.data.Hvals)
-      if QM.data.Hrows[i] == QM.data.Hcols[i]
-        Hvals[i] = QM.data.Hvals[i] / 2
-      else
-        Hvals[i] = QM.data.Hvals[i]
-      end
-    end
-    Q = sparse(QM.data.Hrows, QM.data.Hcols, QM.data.Hvals, QM.meta.nvar, QM.meta.nvar)
+    Q = sparse(QM.data.H.rows, QM.data.H.cols, QM.data.H.vals, QM.meta.nvar, QM.meta.nvar)
     diag_matrix = spdiagm(0 => diag(Q))
     Q = Q + Q' - diag_matrix
     qmatcnt = zeros(Int, QM.meta.nvar)
@@ -97,8 +94,8 @@ function cplex_inputQM(QM::QuadraticModel; method=4, display=1, kwargs...)
                 convert(Array{Cint,1}, Q.rowval.-1), Q.nzval)
   end
 
-  Acsrrowptr, Acsrcolval, Acsrnzval = sparse_csr(QM.data.Arows, QM.data.Acols,
-                                                  QM.data.Avals, QM.meta.ncon,
+  Acsrrowptr, Acsrcolval, Acsrnzval = sparse_csr(QM.data.A.rows, QM.data.A.cols,
+                                                  QM.data.A.vals, QM.meta.ncon,
                                                   QM.meta.nvar)
 
   sense = fill(Cchar('A'), QM.meta.ncon) # lower, greater, range or equal. A is for the init
