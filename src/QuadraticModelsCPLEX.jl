@@ -56,7 +56,8 @@ function sparse_csr(I, J, V, m=maximum(I), n=maximum(J))
 end
 
 cplex_inputQM(QM::QuadraticModel{T, S}; kwargs...) where {T, S} = cplex_inputQM(
-  convert(QuadraticModel{T, S, SparseMatrixCOO{T, Int}, SparseMatrixCOO{T, Int}}, QM)
+  convert(QuadraticModel{T, S, SparseMatrixCOO{T, Int}, SparseMatrixCOO{T, Int}}, QM);
+  kwargs...
 )
 
 function cplex_inputQM(QM::QuadraticModel{T, S, M1, M2}; method=1, display=1,
