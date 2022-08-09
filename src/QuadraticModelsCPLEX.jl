@@ -66,7 +66,6 @@ function cplex_inputQM(QM::QuadraticModel{T, S, M1, M2}; method=1, display=1,
   env = CPLEX.Env()
   CPXsetintparam(env, CPXPARAM_ScreenOutput, display)   # Enable output (0=off)
   CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600)  # Time limit
-  CPXsetintparam(env, CPXPARAM_Threads, 1) # Single thread
   for (k, v) in kwargs
     if k==:presolve
       CPXsetintparam(env, CPXPARAM_Preprocessing_Presolve, v) # 0 = no presolve
@@ -74,6 +73,8 @@ function cplex_inputQM(QM::QuadraticModel{T, S, M1, M2}; method=1, display=1,
       CPXsetintparam(env, CPXPARAM_Read_Scale, -1) # -1 = no scaling
     elseif k==:crossover
       CPXsetintparam(env, CPXPARAM_SolutionType, v)  # 2 = no crossover
+    elseif k==:threads
+      CPXsetintparam(env, CPXPARAM_Threads, v) # nb threads
     end
   end
   CPXsetintparam(env, CPXPARAM_LPMethod, method)  # 4 = Use barrier
