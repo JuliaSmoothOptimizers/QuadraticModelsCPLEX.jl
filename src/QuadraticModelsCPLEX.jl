@@ -168,8 +168,9 @@ function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
   objval_p = Vector{Cdouble}(undef, 1)
   CPXgetobjval(env, lp, objval_p)
 
-  stats = GenericExecutionStats(get(cplex_statuses, CPXgetstat(env, lp), :unknown),
-                                QM, solution = x,
+  stats = GenericExecutionStats(QM,
+                                status = get(cplex_statuses, CPXgetstat(env, lp), :unknown),
+                                solution = x,
                                 objective = objval_p[1],
                                 primal_feas = primal_feas[1],
                                 dual_feas = dual_feas[1],
