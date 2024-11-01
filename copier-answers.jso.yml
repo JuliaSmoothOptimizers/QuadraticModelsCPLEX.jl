@@ -1,0 +1,8 @@
+PackageName: "QuadraticModelsCPLEX"
+PackageOwner: "JuliaSmoothOptimizers"
+PackageUUID: "a53098ac-c15a-4696-bee0-14caaca04665"
+_src_path: "https://github.com/JuliaSmoothOptimizers/JSOBestieTemplate.jl"
+_commit: "v0.13.0"
+AddBreakage: true
+AddBenchmark: false
+AddBenchmarkCI: true
