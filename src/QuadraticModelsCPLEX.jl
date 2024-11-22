@@ -143,6 +143,21 @@ function cplex_inputQM(QM::QuadraticModel{T, S, M1, M2}; method=1, display=1,
   return env, lp
 end
 
+"""
+    stats = cplex(QM; method=4, display=1, kwargs...)
+
+Solve a `QuadraticModel` from [`QuadraticModels.jl`](https://github.com/JuliaSmoothOptimizers/QuadraticModels.jl).
+The ouput `stats` is a [`GenericExecutionStats`](https://juliasmoothoptimizers.github.io/SolverCore.jl/stable/reference/#SolverCore.GenericExecutionStats)
+from the package [`SolverCore.jl`](https://github.com/JuliaSmoothOptimizers/SolverCore.jl).
+Set `display = 0` to deactivate logging.
+`method` is used to select the algorithm to solve a problem.
+See more information in [`CPLEX's user manual`](https://www.ibm.com/docs/en/icos/12.8.0.0?topic=cplex-users-manual). 
+
+You can specify keywords arguments such as:
+
+- `presolve = 0` to deactivate presolve,
+- `scaling = -1` to deactivate scaling.
+"""
 function cplex(QM::QuadraticModel; method=4, display=1, kwargs...)
 
   env, lp = cplex_inputQM(QM; method=method, display=display, kwargs...)
@@ -184,6 +199,12 @@ mutable struct CPXPresolveException <: Exception
   msg::AbstractString
 end
 
+"""
+    presolve_to_file(QM; path = "presolved.mps", method=4, display=1, kwargs...)
+
+Use CPLEX to presolve a problem and write the presolved problem to a MPS file at the `path` location.
+See [`cplex`](@ref) to tune the input parameters.
+"""
 function presolve_to_file(QM::QuadraticModel; path::String = "presolved.mps", method=4, display=1, kwargs...)
 
   env, lp = cplex_inputQM(QM; method=method, display=display, kwargs...)
